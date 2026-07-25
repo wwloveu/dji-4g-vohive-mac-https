@@ -1,0 +1,14 @@
+# local runtime / secrets
+*.log
+*.pid
+*.sock
+.DS_Store
+**/.ssh/
+**/id_*
+*.qcow2
+*.img
+*.iso
+*.utm/
+utm-build/
+work/
+*.tar.gz
