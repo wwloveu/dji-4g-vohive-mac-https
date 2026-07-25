@@ -29,6 +29,7 @@ AT+CFUN=1,1
 3. 通过 ECM 接口访问 `1.1.1.1` 和 HTTPS 均超时；因此不是 DNS 问题。
 4. 蜂窝侧正常：`CHN-CT (46011)`、`CTNET`、`AT+CGATT?` 为 `1`、CID 1 已激活，且已获得运营商分配地址和 DNS。
 5. 标准 EC25 网络控制命令均不可用：`AT+QNETDEVCTL?`、`AT+QCFG="nat"`、`AT+QICSGP?` 返回 `ERROR`；`AT+CGACT=0,1` 和 `AT+CGACT=1,1` 也返回 `ERROR`。
+6. QDC 私有路由开关 `AT+QCFG="iproute_enable"` 已是 `1`，但私有 WWAN 会话 `AT+QLWWANSTATUS=1` 仍为 `0.0.0.0`；CID 已绑定为 `1`，`AT+QLWWANUP` 未建立该会话。
 
 ## 已排除
 
