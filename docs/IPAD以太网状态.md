@@ -45,11 +45,23 @@
 - VM 内 `ModemManager` 会独占 `/dev/ttyUSB2`；发 AT 前必须停止它，否则 `socat` 返回 `Device or resource busy`
 
 ### 3) 当前机态
-最近一次检查：
-- 已恢复到 `usbnet=0` QMI 模式
-- VM：运行中；`/dev/cdc-wdm0` 已出现
-- VoHive：`active`
-- 上一次 ECM 测试的 `en10` DHCP 地址为 `192.168.225.24`，但其 WAN 仍不可用
+2026-07-26 已按 iPad ECM 教程写入并获得 `OK`：
+
+```text
+AT+QCFG="usbcfg",0x2C7C,0x0125,1,1,1,1,1,0,1
+AT+CFUN=1,1
+```
+
+写入前已保存的 VoHive 回滚组合为：
+
+```text
+AT+QCFG="usbcfg",0x2C7C,0x0125,1,1,1,1,1,0,0
+AT+QCFG="usbnet",0
+```
+
+- 模块仍由 root 启动的 QEMU（PID `39905`）占用；普通账户停止脚本没有权限终止它。
+- 先执行 `sudo /Users/wwloveu/Documents/Codex/2026-07-25/wwloveu-dji-4g-vohive-mac-https/repo/scripts/stop-vohive-vm.sh`，再将模块物理拔插后直接接入 iPad Pro，才能完成这一次配置的 iPad 端验收。
+- 上一次 Mac ECM 测试的 `en10` DHCP 地址为 `192.168.225.24`，但其 WAN 仍不可用。
 
 ### iPad 直连验收条件
 已在确认可用的电信 SIM 上读取到：

@@ -23,8 +23,9 @@ if [ "$ok" != 1 ]; then
   exit 1
 fi
 
-echo "[3/4] 切回 usbnet=0 (QMI)..."
+echo "[3/4] 恢复 VoHive USB 组合 (QMI)..."
 "${SSH[@]}" "echo vohive | sudo -S bash -lc '
+systemctl stop ModemManager || true
 modprobe option || true
 # ECM 下 AT 口可能是 ttyUSB2/3，多试
 for p in /dev/ttyUSB2 /dev/ttyUSB3 /dev/ttyUSB1 /dev/ttyUSB0; do
@@ -34,6 +35,8 @@ done
 echo PORT=\$PORT
 [ -n \"\$PORT\" ]
 printf \"AT+QCFG=\\\"usbnet\\\",0\\r\" | socat - \$PORT,crnl
+sleep 1
+printf \"AT+QCFG=\\\"usbcfg\\\",0x2C7C,0x0125,1,1,1,1,1,0,0\\r\" | socat - \$PORT,crnl
 sleep 1
 printf \"AT+CFUN=1,1\\r\" | socat - \$PORT,crnl || true
 '"

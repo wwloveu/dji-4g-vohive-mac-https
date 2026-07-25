@@ -4,6 +4,7 @@ set -euo pipefail
 KEY="$HOME/.ssh/id_ed25519_vohive"
 SSH=(ssh -i "$KEY" -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -p 2222 ubuntu@127.0.0.1)
 START_VM="/Users/wwloveu/Documents/Codex/2026-07-25/wwloveu-dji-4g-vohive-mac-https/work/utm-build/start-vohive-vm.sh"
+STOP_VM="/Users/wwloveu/Documents/Codex/2026-07-25/wwloveu-dji-4g-vohive-mac-https/repo/scripts/stop-vohive-vm.sh"
 
 if ! pgrep -f 'qemu-system-aarch64 -name vohive' >/dev/null; then
   echo "[*] 启动 VM 以便发 AT..."
@@ -23,19 +24,28 @@ for i in $(seq 1 20); do
   sleep 2
 done
 
-echo "[2/3] 停 VoHive 并切换 usbnet=1 ..."
+echo "[2/3] 停 VoHive 并切换到 iPad ECM USB 组合 ..."
 "${SSH[@]}" "echo vohive | sudo -S bash -lc '
 systemctl stop vohive || true
+systemctl stop ModemManager || true
 modprobe option || true
 PORT=/dev/ttyUSB2
 [ -e \$PORT ] || PORT=/dev/ttyUSB3
 [ -e \$PORT ] || PORT=/dev/ttyUSB1
-printf \"AT+QCFG=\\\"usbnet\\\",1\\r\" | socat - \$PORT,crnl
+# The final usbcfg field selects the ECM composition used by iPadOS.
+printf \"AT+QCFG=\\\"usbcfg\\\",0x2C7C,0x0125,1,1,1,1,1,0,1\\r\" | socat - \$PORT,crnl
 sleep 1
 printf \"AT+CFUN=1,1\\r\" | socat - \$PORT,crnl || true
 '"
 
-echo "[3/3] 等待 Mac 识别 Baiwang/ECM 网卡..."
+echo "[3/4] 停止 QEMU，释放 USB 给 macOS/iPad..."
+if ! sudo bash "$STOP_VM"; then
+  echo "❌ 无法停止 QEMU；请确认 sudo 权限后重试。"
+  exit 1
+fi
+sleep 2
+
+echo "[4/4] 等待 Mac 识别 Baiwang/ECM 网卡..."
 for i in $(seq 1 20); do
   if networksetup -listallhardwareports 2>/dev/null | grep -q 'Baiwang'; then
     echo "✅ ECM 模式就绪"
