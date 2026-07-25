@@ -32,8 +32,9 @@ modprobe option || true
 PORT=/dev/ttyUSB2
 [ -e \$PORT ] || PORT=/dev/ttyUSB3
 [ -e \$PORT ] || PORT=/dev/ttyUSB1
-# The final usbcfg field selects the ECM composition used by iPadOS.
-printf \"AT+QCFG=\\\"usbcfg\\\",0x2C7C,0x0125,1,1,1,1,1,0,1\\r\" | socat - \$PORT,crnl
+printf \"AT+QCFG=\\\"usbcfg\\\",0x2C7C,0x0125,1,1,1,1,1,0,0\\r\" | socat - \$PORT,crnl
+sleep 1
+printf \"AT+QCFG=\\\"usbnet\\\",1\\r\" | socat - \$PORT,crnl
 sleep 1
 printf \"AT+CFUN=1,1\\r\" | socat - \$PORT,crnl || true
 '"

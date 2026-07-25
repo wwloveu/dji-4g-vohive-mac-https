@@ -45,23 +45,26 @@
 - VM 内 `ModemManager` 会独占 `/dev/ttyUSB2`；发 AT 前必须停止它，否则 `socat` 返回 `Device or resource busy`
 
 ### 3) 当前机态
-2026-07-26 已按 iPad ECM 教程写入并获得 `OK`：
+2026-07-26 曾测试一份新建教程中的 USB 组合：
 
 ```text
 AT+QCFG="usbcfg",0x2C7C,0x0125,1,1,1,1,1,0,1
 AT+CFUN=1,1
 ```
 
-写入前已保存的 VoHive 回滚组合为：
+该组合会让模块枚举为复合 USB 设备，但没有 CDC 网络接口，iPad 不会显示以太网；已回滚，不再使用。
+
+当前已实测可用的 iPad ECM 组合为：
 
 ```text
 AT+QCFG="usbcfg",0x2C7C,0x0125,1,1,1,1,1,0,0
-AT+QCFG="usbnet",0
+AT+QCFG="usbnet",1
+AT+CFUN=1,1
 ```
 
-- 模块仍由 root 启动的 QEMU（PID `39905`）占用；普通账户停止脚本没有权限终止它。
-- 先执行 `sudo /Users/wwloveu/Documents/Codex/2026-07-25/wwloveu-dji-4g-vohive-mac-https/repo/scripts/stop-vohive-vm.sh`，再将模块物理拔插后直接接入 iPad Pro，才能完成这一次配置的 iPad 端验收。
-- 上一次 Mac ECM 测试的 `en10` DHCP 地址为 `192.168.225.24`，但其 WAN 仍不可用。
+- 模块已重新枚举为 `Baiwang/en10`，由 macOS 原生 `AppleUserECM` 驱动。
+- USB 描述符已确认 ECM 控制接口为 `class 2 / subclass 6`，数据接口为 `class 10`，即 iPadOS 原生支持的 CDC-ECM。
+- QEMU 已停止；现在可物理拔插并直连 iPad Pro 进行验收。
 
 ### iPad 直连验收条件
 已在确认可用的电信 SIM 上读取到：
